@@ -1,4 +1,4 @@
-package org.bahmni.module.visit;
+package org.msf.module.visit;
 
 import org.openmrs.api.AdministrationService;
 

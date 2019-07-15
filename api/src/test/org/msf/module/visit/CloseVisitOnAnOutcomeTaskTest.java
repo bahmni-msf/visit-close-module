@@ -1,4 +1,4 @@
-package org.bahmni.module.visit;
+package org.msf.module.visit;
 
 import org.bahmni.module.bahmnicore.service.BahmniObsService;
 import org.junit.Before;
@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static org.bahmni.module.visit.TestHelper.setValuesForMemberFields;
+import static org.msf.module.visit.TestHelper.setValuesForMemberFields;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Mockito.mock;

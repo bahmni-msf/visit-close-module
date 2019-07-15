@@ -1,4 +1,4 @@
-package org.bahmni.module.visit;
+package org.msf.module.visit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;

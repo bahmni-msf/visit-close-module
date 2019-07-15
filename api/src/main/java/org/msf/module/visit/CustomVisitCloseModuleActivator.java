@@ -1,4 +1,4 @@
-package org.bahmni.module.visit;
+package org.msf.module.visit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
