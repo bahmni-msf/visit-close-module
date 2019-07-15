@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="visit-close-module-1563182703" author="Siva R">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from global_property where property='visits.closeOnAnOutcome.visitType(s)';
+            </sqlCheck>
+        </preConditions>
+        <comment>Create global property 'visits.closeOnAnOutcome.visitType(s)'</comment>
+        <sql>
+            insert into global_property (property, description, uuid) values ('visits.closeOnAnOutcome.visitType(s)',
+            'comma-separated list of visit type(s) to close based on the outcome of the concept(s) defined in
+            visits.closeOnAnOutcome.coneptName(s). It works together with visits.closeOnAnOutcome.coneptName(s)',
+            uuid());
+        </sql>
+    </changeSet>
+
+    <changeSet id="visit-close-module-1563184311" author="Siva R">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from global_property where property='visits.closeOnAnOutcome.coneptName(s)';
+            </sqlCheck>
+        </preConditions>
+        <comment>Create global property 'visits.closeOnAnOutcome.coneptName(s)'</comment>
+        <sql>
+            insert into global_property (property, description, uuid) values ('visits.closeOnAnOutcome.coneptName(s)',
+            'comma-separated list of fully qualified concept names, whose outcome(any of the concept outcome) used to
+            close the visits defined in visits.closeOnAnOutcome.visitType(s). It works together with
+            visits.closeOnAnOutcome.visitType(s)',
+            uuid());
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
