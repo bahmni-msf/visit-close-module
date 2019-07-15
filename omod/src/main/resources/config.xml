@@ -11,4 +11,10 @@
 		Closes a visit based on an outcome
 	</description>
 
+	<activator>org.bahmni.module.visit.CustomVisitCloseModuleActivator</activator>
+
+	<require_modules>
+		<require_module>org.bahmni.module.bahmnicore</require_module>
+	</require_modules>
+
 </module>
