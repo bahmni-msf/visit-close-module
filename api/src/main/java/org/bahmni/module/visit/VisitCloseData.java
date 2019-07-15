@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class VisitClose {
+class VisitCloseData {
 
     private static final String VISIT_TYPES_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.visitType(s)";
     private static final String CONCEPTS_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.conceptName(s)";
@@ -20,7 +20,7 @@ class VisitClose {
     private VisitService visitService;
     private ConceptService conceptService;
 
-    VisitClose() {
+    VisitCloseData() {
         this.globalPropertyReader = new GlobalPropertyReader();
         this.visitService = Context.getVisitService();
         this.conceptService = Context.getConceptService();

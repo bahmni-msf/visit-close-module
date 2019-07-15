@@ -25,9 +25,9 @@ import static org.mockito.Mockito.when;
 
 @PrepareForTest(Context.class)
 @RunWith(PowerMockRunner.class)
-public class VisitCloseTest {
+public class VisitCloseDataTest {
 
-    private VisitClose visitClose;
+    private VisitCloseData visitCloseData;
     @Mock
     private GlobalPropertyReader globalPropertyReader;
     @Mock
@@ -41,8 +41,8 @@ public class VisitCloseTest {
         when(Context.getVisitService()).thenReturn(visitService);
         when(Context.getConceptService()).thenReturn(conceptService);
 
-        visitClose = new VisitClose();
-        setValuesForMemberFields(visitClose, "globalPropertyReader", globalPropertyReader);
+        visitCloseData = new VisitCloseData();
+        setValuesForMemberFields(visitCloseData, "globalPropertyReader", globalPropertyReader);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class VisitCloseTest {
         when(visitService.getVisitTypes("OPD")).thenReturn(singletonList(opdVisitType));
 
 
-        List<VisitType> visitTypes = visitClose.getVisitTypes();
+        List<VisitType> visitTypes = visitCloseData.getVisitTypes();
 
         assertEquals(2, visitTypes.size());
         assertTrue(visitTypes.containsAll(Arrays.asList(mloVisitType, opdVisitType)));
@@ -67,7 +67,7 @@ public class VisitCloseTest {
     public void shouldReturnEmptyListOfVisitTypesIfNoVisitProvidedInGlobalProperty() {
         when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.visitType(s)"))
                 .thenReturn(null);
-        List<VisitType> visitTypes = visitClose.getVisitTypes();
+        List<VisitType> visitTypes = visitCloseData.getVisitTypes();
 
         assertEquals(0, visitTypes.size());
     }
@@ -86,7 +86,7 @@ public class VisitCloseTest {
                 .thenReturn(concept2);
 
 
-        List<Concept> concepts = visitClose.getConcepts();
+        List<Concept> concepts = visitCloseData.getConcepts();
 
         assertEquals(2, concepts.size());
         assertTrue(concepts.containsAll(Arrays.asList(concept1, concept2)));
