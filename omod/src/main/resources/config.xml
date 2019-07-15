@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module configVersion="1.2">
+
+	<id>visit-close-module</id>
+	<name>Patient visit close module</name>
+	<version>0.91</version>
+	<package>org.bahmni.module.visit</package>
+	<author>bahmni-msf</author>
+	<description>
+		Closes a visit based on an outcome
+	</description>
+
+</module>
