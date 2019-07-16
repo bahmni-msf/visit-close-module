@@ -13,19 +13,23 @@ import org.openmrs.api.context.Context;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.slf4j.Logger;
 
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static org.msf.module.visit.TestHelper.setValuesForMemberFields;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.msf.module.visit.TestHelper.setValueForFinalStaticField;
+import static org.msf.module.visit.TestHelper.setValuesForMemberFields;
 
 @PrepareForTest(Context.class)
 @RunWith(PowerMockRunner.class)
@@ -37,6 +41,9 @@ public class CloseVisitOnAnOutcomeTaskTest {
     @Mock
     private VisitCloseData visitCloseData;
 
+    @Mock
+    private Logger log;
+
     private CloseVisitOnAnOutcomeTask closeVisitOnAnOutcomeTask;
 
     @Before
@@ -47,6 +54,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
         closeVisitOnAnOutcomeTask = new CloseVisitOnAnOutcomeTask();
 
         setValuesForMemberFields(closeVisitOnAnOutcomeTask, "visitCloseData", visitCloseData);
+        setValueForFinalStaticField(CloseVisitOnAnOutcomeTask.class, "log", log);
 
     }
 
@@ -96,5 +104,24 @@ public class CloseVisitOnAnOutcomeTaskTest {
         closeVisitOnAnOutcomeTask.execute();
 
         verify(visitService, times(0)).endVisit(any(Visit.class), any(Date.class));
+    }
+
+    @Test
+    public void shouldVerifyEndVisitIsNotCalledWhenisExecutingFieldIsTrue() {
+
+        closeVisitOnAnOutcomeTask.startExecuting();
+
+        closeVisitOnAnOutcomeTask.execute();
+        verify(visitService, times(0)).endVisit(any(Visit.class), any(Date.class));
+
+    }
+
+    @Test
+    public void shouldLogErrorOnAnyExceptionWhileExecutingTheTask() {
+        when(visitCloseData.getVisitTypes()).thenThrow(InvalidParameterException.class);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(log).error(eq("Error while closing patients visits based on concept outcomes...:"), any(InvalidParameterException.class));
     }
 }
