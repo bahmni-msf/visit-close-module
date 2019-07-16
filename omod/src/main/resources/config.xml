@@ -3,7 +3,7 @@
 <module configVersion="1.2">
 
 	<id>visit-close-module</id>
-	<name>Patient visit close module</name>
+	<name>Patient Visit Close Module</name>
 	<version>0.91</version>
 	<package>org.bahmni.module.visit</package>
 	<author>bahmni-msf</author>

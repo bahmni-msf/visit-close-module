@@ -26,13 +26,29 @@
                 select count(1) from global_property where property='visits.closeOnAnOutcome.conceptName(s)';
             </sqlCheck>
         </preConditions>
-        <comment>Create global property 'visits.closeOnAnOutcome.coneptName(s)'</comment>
+        <comment>Create global property 'visits.closeOnAnOutcome.conceptName(s)'</comment>
         <sql>
             insert into global_property (property, description, uuid) values ('visits.closeOnAnOutcome.conceptName(s)',
-            'comma-separated list of fully qualified concept names, whose outcome(any of the concept outcome) used to
+            'pipe(|) separated list of fully qualified concept names, whose outcome(any of the concept outcome) used to
             close the visits defined in visits.closeOnAnOutcome.visitType(s). It works together with
             visits.closeOnAnOutcome.visitType(s)',
             uuid());
+        </sql>
+    </changeSet>
+
+    <changeSet id="visit-close-module-1563218579" author="Siva R">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from scheduler_task_config where
+                schedulable_class='org.msf.module.visit.CloseVisitOnAnOutcomeTask';
+            </sqlCheck>
+        </preConditions>
+        <comment>Create scheduler to close visits on an outcome</comment>
+        <sql>
+            insert into scheduler_task_config (name, description, schedulable_class, start_time, start_on_startup,
+            start_time_pattern, repeat_interval, created_by, date_created, uuid) values ('Close Visits On Outcome',
+            'Closes given tasks based on concept outcomes', 'org.msf.module.visit.CloseVisitOnAnOutcomeTask',
+            CONCAT(CURDATE(), ' 00:00:00'), 1, 'MM/dd/yyyy HH:mm:ss', 86400, 1, now(), uuid());
         </sql>
     </changeSet>
 

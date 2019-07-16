@@ -15,7 +15,7 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
     private VisitService visitService;
     private VisitCloseData visitCloseData;
 
-    CloseVisitOnAnOutcomeTask() {
+    public CloseVisitOnAnOutcomeTask() {
         super();
         visitService = Context.getVisitService();
         visitCloseData = new VisitCloseData();
