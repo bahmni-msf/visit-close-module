@@ -48,7 +48,7 @@
             insert into scheduler_task_config (name, description, schedulable_class, start_time, start_on_startup,
             start_time_pattern, repeat_interval, created_by, date_created, uuid) values ('Close Visits On Outcome',
             'Closes given tasks based on concept outcomes', 'org.msf.module.visit.CloseVisitOnAnOutcomeTask',
-            CONCAT(CURDATE(), ' 00:00:00'), 1, 'MM/dd/yyyy HH:mm:ss', 86400, 1, now(), uuid());
+            CONCAT(CURDATE(), ' 23:50:00'), 1, 'MM/dd/yyyy HH:mm:ss', 86400, 1, now(), uuid());
         </sql>
     </changeSet>
 
