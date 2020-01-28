@@ -1,12 +1,12 @@
-#Close Patient Visit
+# Close Patient Visit
 This module helps in closing the patient visit based on the observations filled.
-#Build
+# Build
 For building this omod, run:
 `mvn clean install`
-#Deployment
+# Deployment
 Place that built omod in the following path:
 `/opt/openmrs/modules`
-#Description
+# Description
 It creates a new Scheduler Task `Close Visits On Outcome` which runs everyday at 11:50:00 pm. 
 
 It also creates two new global properties `visits.closeOnAnOutcome.conceptName(s)` and `visits.closeOnAnOutcome.visitType(s)`.
