@@ -59,7 +59,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
     @Mock
     private BahmniObsService bahmniObsService;
 
-    private Concept firstStageSurgicalOutcomesConcept, followUpSurgicalOutcomesConcept, finalValidationOutcomesConcept, networkFollowupConcept;
+    private Concept networkFollowupConcept;
 
     private CloseVisitOnAnOutcomeTask closeVisitOnAnOutcomeTask;
 
@@ -83,12 +83,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
         setValuesForMemberFields(closeVisitOnAnOutcomeTask, "visitCloseData", visitCloseData);
         setValueForFinalStaticField(CloseVisitOnAnOutcomeTask.class, "log", log);
 
-        firstStageSurgicalOutcomesConcept = setUpConceptData(100, "FSTG, Outcomes for 1st stage surgical validation");
-        followUpSurgicalOutcomesConcept = setUpConceptData(101, "FUP, Outcomes for follow-up surgical validation");
-        finalValidationOutcomesConcept = setUpConceptData(102, "FV, Outcomes FV");
         networkFollowupConcept = setUpConceptData(103, "Network Follow-up");
-
-
     }
 
     @Test
@@ -390,6 +385,41 @@ public class CloseVisitOnAnOutcomeTaskTest {
         verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
         verify(visitService, times(1)).endVisit(eq(openVisit), isA(Date.class));
 
+    }
+
+    @Test
+    public void shouldNotCloseTheVisitWhenOutcomeConceptsAreNotFilled() {
+        Patient patient = new Patient();
+        patient.setUuid("Uuid");
+        Visit openVisit = new Visit();
+        openVisit.setPatient(patient);
+        openVisit.setVisitType(new VisitType("some", "visit"));
+        List<Visit> visits = new ArrayList<>();
+        visits.add(openVisit);
+
+        PatientProgram patientProgram = new PatientProgram();
+        patientProgram.setId(1234);
+        patientProgram.setDateCompleted(null);
+        List<PatientProgram> patientPrograms = new ArrayList<>();
+        patientPrograms.add(patientProgram);
+
+        Concept concept = mock(Concept.class);
+
+        VisitType visitType = mock(VisitType.class);
+        List<VisitType> visitTypes = singletonList(visitType);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
+        when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
+        when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
+        verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
+        verify(visitService, times(0)).endVisit(eq(openVisit), isA(Date.class));
     }
 
 }
