@@ -16,6 +16,7 @@ class VisitCloseData {
 
     private static final String VISIT_TYPES_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.visitType(s)";
     private static final String CONCEPTS_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.conceptName(s)";
+    private static final String PROGRAM_STATE_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.programState";
     private GlobalPropertyReader globalPropertyReader;
     private VisitService visitService;
     private ConceptService conceptService;
@@ -39,14 +40,20 @@ class VisitCloseData {
         return visitTypes;
     }
 
-    List<Concept> getConcepts() {
+    private List<Concept> getConcepts(String globalPropertyType) {
         ArrayList<Concept> concepts = new ArrayList<>();
-        String pipeSeparatedConceptNames = globalPropertyReader.getValueOfProperty(CONCEPTS_GLOBAL_PROPERTY);
+        String pipeSeparatedConceptNames = globalPropertyReader.getValueOfProperty(globalPropertyType);
         if (StringUtils.isBlank(pipeSeparatedConceptNames))
             return concepts;
         String[] fullyQualifiedConceptNames = pipeSeparatedConceptNames.split("\\s*\\|\\s*");
         return Arrays.stream(fullyQualifiedConceptNames).map(conceptService::getConcept).collect(Collectors.toList());
     }
 
+    List<Concept> getOutcomeConcepts() {
+        return getConcepts(CONCEPTS_GLOBAL_PROPERTY);
+    }
 
+    List<Concept> getProgramStateConcepts() {
+        return getConcepts(PROGRAM_STATE_GLOBAL_PROPERTY);
+    }
 }

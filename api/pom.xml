@@ -48,6 +48,18 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>bedmanagement-api</artifactId>
+			<version>5.10.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>emrapi-api</artifactId>
+			<version>1.24.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
 			<version>1.6.5</version>
@@ -55,4 +67,3 @@
 		</dependency>
 	</dependencies>
 </project>
-
