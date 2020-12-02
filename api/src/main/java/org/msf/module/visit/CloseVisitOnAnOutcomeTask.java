@@ -67,8 +67,8 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
                         continue;
                     }
                 } else {
-                    if (outcomeAvailable(openVisit, visitCloseData.getOutcomeConcepts()))
-                        visitService.endVisit(openVisit, new Date());
+                    if (!outcomeAvailable(openVisit, visitCloseData.getOutcomeConcepts()))
+                        continue;
                 }
             }
             visitService.endVisit(openVisit, new Date());

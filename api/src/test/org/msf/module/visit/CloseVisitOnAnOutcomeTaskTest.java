@@ -10,6 +10,7 @@ import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.bahmniemrapi.encountertransaction.contract.BahmniObservation;
 import org.openmrs.module.bedmanagement.BedDetails;
 import org.openmrs.module.bedmanagement.service.BedManagementService;
 import org.powermock.api.mockito.PowerMockito;
@@ -54,6 +55,9 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
     @Mock
     private ConceptService conceptService;
+
+    @Mock
+    private BahmniObsService bahmniObsService;
 
     private Concept firstStageSurgicalOutcomesConcept, followUpSurgicalOutcomesConcept, finalValidationOutcomesConcept, networkFollowupConcept;
 
@@ -288,6 +292,104 @@ public class CloseVisitOnAnOutcomeTaskTest {
         verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
         verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
         verify(visitService, times(0)).endVisit(eq(hospitalVisit), isA(Date.class));
+    }
+
+    @Test
+    public void shouldNotCloseVisitWhenVisitIsHospitalAndWhenTheStateIsNotNetworkFollowup() {
+        Patient patient = new Patient();
+        patient.setUuid("Uuid");
+
+        Concept concept = mock(Concept.class);
+
+        VisitType visitType = mock(VisitType.class);
+        List<VisitType> visitTypes = singletonList(visitType);
+
+        PatientState patientState = new PatientState();
+        patientState.setId(1);
+        patientState.setPatientProgram(new PatientProgram());
+
+        List<ProgramWorkflowState> programWorkflowStates = new ArrayList<>();
+        ProgramWorkflowState networkFollowUpProgramWorkflowState = new ProgramWorkflowState(1);
+        networkFollowUpProgramWorkflowState.setName("Something");
+        networkFollowUpProgramWorkflowState.setConcept(networkFollowupConcept);
+        programWorkflowStates.add(networkFollowUpProgramWorkflowState);
+        patientState.setState(new ProgramWorkflowState());
+
+        Visit hospitalVisit = new Visit(1001);
+        hospitalVisit.setVisitType(new VisitType("Hospital", "visit"));
+        hospitalVisit.setPatient(patient);
+
+        List<PatientProgram> patientPrograms = new ArrayList<>();
+        patientPrograms.add(activePatientProgram);
+
+        List<Visit> visits = new ArrayList<>();
+        visits.add(hospitalVisit);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
+
+        when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
+        when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
+
+        when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
+        when(programWorkflowService.getProgramWorkflowStatesByConcept(networkFollowupConcept)).thenReturn(programWorkflowStates);
+
+        when(Context.getService(BedManagementService.class)).thenReturn(bedManagementService);
+        when(bedManagementService.getBedAssignmentDetailsByPatient(patient)).thenReturn(null);
+        when(activePatientProgram.getDateCompleted()).thenReturn(null);
+        when(activePatientProgram.getCurrentState(null)).thenReturn(patientState);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
+        verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
+        verify(visitService, times(0)).endVisit(eq(hospitalVisit), isA(Date.class));
+
+    }
+    @Test
+    public void shouldCloseTheVisitWhenOutcomesAreFilledAndIsNotAHospitalVisit() {
+        Patient patient = new Patient();
+        patient.setUuid("Uuid");
+        Visit openVisit = new Visit();
+        openVisit.setPatient(patient);
+        openVisit.setVisitType(new VisitType("some", "visit"));
+        List<Visit> visits = new ArrayList<>();
+        visits.add(openVisit);
+
+        Concept concept = mock(Concept.class);
+
+        VisitType visitType = mock(VisitType.class);
+        List<VisitType> visitTypes = singletonList(visitType);
+
+        PatientProgram patientProgram = new PatientProgram();
+        patientProgram.setId(1234);
+        patientProgram.setDateCompleted(null);
+        List<PatientProgram> patientPrograms = new ArrayList<>();
+        patientPrograms.add(patientProgram);
+        Collection<BahmniObservation> bahmniObservations = new ArrayList<>();
+        bahmniObservations.add(new BahmniObservation());
+
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
+
+        when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
+        when(visitCloseData.getOutcomeConcepts()).thenReturn(singletonList(networkFollowupConcept));
+        when(Context.getService(BahmniObsService.class)).thenReturn(bahmniObsService);
+        when(bahmniObsService.getLatestObsByVisit(eq(openVisit), any(Collection.class), eq(null), eq(true))).thenReturn(bahmniObservations);
+        when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
+        when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
+        verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
+        verify(visitService, times(1)).endVisit(eq(openVisit), isA(Date.class));
+
     }
 
 }
