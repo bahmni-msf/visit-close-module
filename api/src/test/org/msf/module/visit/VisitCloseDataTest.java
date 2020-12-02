@@ -86,7 +86,28 @@ public class VisitCloseDataTest {
                 .thenReturn(concept2);
 
 
-        List<Concept> concepts = visitCloseData.getConcepts();
+        List<Concept> concepts = visitCloseData.getOutcomeConcepts();
+
+        assertEquals(2, concepts.size());
+        assertTrue(concepts.containsAll(Arrays.asList(concept1, concept2)));
+
+    }
+
+    @Test
+    public void shouldReturnConceptsForGivenProgramStateConceptNamesInGlobalPropery() {
+        String conceptNames = "Network Follow-up | Discharge";
+        Concept concept1 = mock(Concept.class);
+        Concept concept2 = mock(Concept.class);
+        when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.programState"))
+                .thenReturn(conceptNames);
+
+        when(conceptService.getConcept("Network Follow-up"))
+                .thenReturn(concept1);
+        when(conceptService.getConcept("Discharge"))
+                .thenReturn(concept2);
+
+
+        List<Concept> concepts = visitCloseData.getProgramStateConcepts();
 
         assertEquals(2, concepts.size());
         assertTrue(concepts.containsAll(Arrays.asList(concept1, concept2)));
