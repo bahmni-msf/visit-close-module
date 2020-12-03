@@ -202,8 +202,6 @@ public class CloseVisitOnAnOutcomeTaskTest {
         Patient patient = new Patient();
         patient.setUuid("Uuid");
 
-        Concept concept = mock(Concept.class);
-
         PatientState patientState = new PatientState();
         patientState.setId(1);
         patientState.setPatientProgram(new PatientProgram());
@@ -231,10 +229,9 @@ public class CloseVisitOnAnOutcomeTaskTest {
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
         when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
-        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(networkFollowupConcept));
         when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
         when(Context.getConceptService()).thenReturn(conceptService);
-        when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
         when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
         when(programWorkflowService.getProgramWorkflowStatesByConcept(networkFollowupConcept)).thenReturn(programWorkflowStates);
         when(Context.getService(BedManagementService.class)).thenReturn(bedManagementService);
@@ -259,8 +256,6 @@ public class CloseVisitOnAnOutcomeTaskTest {
         patientState.setId(1);
         patientState.setPatientProgram(new PatientProgram());
 
-        Concept concept = mock(Concept.class);
-
         VisitType hospitalVisitType = new VisitType("Hospital", "visit");
         List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
@@ -282,12 +277,10 @@ public class CloseVisitOnAnOutcomeTaskTest {
         visits.add(hospitalVisit);
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
-        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
-
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(networkFollowupConcept));
         when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
         when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
-        when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
 
         when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
         when(programWorkflowService.getProgramWorkflowStatesByConcept(networkFollowupConcept)).thenReturn(programWorkflowStates);
@@ -308,8 +301,6 @@ public class CloseVisitOnAnOutcomeTaskTest {
     public void shouldNotCloseVisitWhenVisitIsHospitalAndWhenTheStateIsNotNetworkFollowupInAmman() {
         Patient patient = new Patient();
         patient.setUuid("Uuid");
-
-        Concept concept = mock(Concept.class);
 
         VisitType hospitalVisitType = new VisitType("Hospital", "visit");
         List<VisitType> visitTypes = singletonList(hospitalVisitType);
@@ -336,13 +327,11 @@ public class CloseVisitOnAnOutcomeTaskTest {
         visits.add(hospitalVisit);
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
-        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(networkFollowupConcept));
         when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
 
         when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
-        when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
-
         when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
         when(programWorkflowService.getProgramWorkflowStatesByConcept(networkFollowupConcept)).thenReturn(programWorkflowStates);
 
@@ -368,7 +357,6 @@ public class CloseVisitOnAnOutcomeTaskTest {
         List<Visit> visits = new ArrayList<>();
         visits.add(openVisit);
 
-        Concept concept = mock(Concept.class);
 
         VisitType hospitalVisitType = new VisitType("Hospital", "visit");
         List<VisitType> visitTypes = singletonList(hospitalVisitType);
@@ -383,7 +371,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
-        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(networkFollowupConcept));
         when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
 
