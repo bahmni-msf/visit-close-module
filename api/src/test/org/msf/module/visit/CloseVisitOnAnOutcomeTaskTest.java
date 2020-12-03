@@ -171,8 +171,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
         Visit visit = new Visit(1000);
         visit.setPatient(new Patient(2));
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         Concept concept = mock(Concept.class);
 
@@ -208,8 +208,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
         patientState.setId(1);
         patientState.setPatientProgram(new PatientProgram());
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         List<ProgramWorkflowState> programWorkflowStates = new ArrayList<>();
         ProgramWorkflowState networkFollowUpProgramWorkflowState = new ProgramWorkflowState(1);
@@ -261,8 +261,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
         Concept concept = mock(Concept.class);
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         List<ProgramWorkflowState> programWorkflowStates = new ArrayList<>();
         ProgramWorkflowState networkFollowUpProgramWorkflowState = new ProgramWorkflowState(1);
@@ -311,8 +311,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
         Concept concept = mock(Concept.class);
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         PatientState patientState = new PatientState();
         patientState.setId(1);
@@ -370,8 +370,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
         Concept concept = mock(Concept.class);
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         PatientProgram patientProgram = new PatientProgram();
         patientProgram.setId(1234);
@@ -420,8 +420,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
         Concept concept = mock(Concept.class);
 
-        VisitType visitType = mock(VisitType.class);
-        List<VisitType> visitTypes = singletonList(visitType);
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
         when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(concept));

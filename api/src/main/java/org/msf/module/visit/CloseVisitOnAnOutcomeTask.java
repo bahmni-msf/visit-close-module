@@ -18,6 +18,7 @@ import java.util.List;
 public class CloseVisitOnAnOutcomeTask extends AbstractTask {
 
     private static final Logger log = LoggerFactory.getLogger(CloseVisitOnAnOutcomeTask.class);
+    final String HOSPITAL_VISIT_TYPE_AMMAN = "Hospital";
 
     private VisitService visitService;
     private VisitCloseData visitCloseData;
@@ -38,7 +39,7 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
             try {
                 List<Visit> visits = visitService.getVisits(visitCloseData.getVisitTypes(), null, null,
                         null, null, null, null, null, null, false, false);
-                if(!visitCloseData.getProgramStateConcepts().isEmpty()){
+                if(isProgramStateConfiguredAndHasHospitalVisit()){
                     closeVisitForAmman(visits);
                 }
                 else {
@@ -54,6 +55,15 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
             }
         }
 
+    }
+
+    private boolean isProgramStateConfiguredAndHasHospitalVisit() {
+        return !visitCloseData.getProgramStateConcepts().isEmpty() && containsHospitalVisitType();
+    }
+
+    private boolean containsHospitalVisitType() {
+        return visitCloseData.getVisitTypes().stream().anyMatch(visitType ->
+                visitType.getName().equals(HOSPITAL_VISIT_TYPE_AMMAN));
     }
 
     private void closeVisitForAmman(List<Visit> visits) {
@@ -104,6 +114,6 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
     }
 
     private boolean isHospitalVisit(Visit openVisit) {
-        return openVisit.getVisitType().getName().equals("Hospital");
+        return openVisit.getVisitType().getName().equals(HOSPITAL_VISIT_TYPE_AMMAN);
     }
 }
