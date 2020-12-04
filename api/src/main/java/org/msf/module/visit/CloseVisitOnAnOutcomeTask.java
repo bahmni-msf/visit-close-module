@@ -12,6 +12,7 @@ import org.openmrs.scheduler.tasks.AbstractTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -69,10 +70,10 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
     private void closeVisitForAmman(List<Visit> visits) {
         for (Visit openVisit : visits) {
             ProgramWorkflowService programWorkflowService = Context.getService(ProgramWorkflowService.class);
-            PatientProgram activePatientProgram = getActivePatientProgramForPatient(openVisit.getPatient(), programWorkflowService);
-            if (activePatientProgram != null) {
+            List<PatientProgram> activePatientProgramList = getActivePatientProgramForPatient(openVisit.getPatient(), programWorkflowService);
+            if (!activePatientProgramList.isEmpty()) {
                 if (isHospitalVisit(openVisit)) {
-                    if (isNotInAnyConfiguredProgramStateOrBedIsAssigned(programWorkflowService, activePatientProgram, openVisit.getPatient())) {
+                    if (isNotInAnyConfiguredProgramStateOrBedIsAssigned(programWorkflowService, activePatientProgramList, openVisit.getPatient())) {
                         continue;
                     }
                 } else {
@@ -84,33 +85,54 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
         }
     }
 
+    private boolean isNotInAnyConfiguredProgramStateOrBedIsAssigned(ProgramWorkflowService programWorkflowService, List<PatientProgram> activePatientProgramList, Patient patient) {
+        if(activePatientProgramList.size() > 1){
+            int count = 0;
+            for(PatientProgram patientProgram : activePatientProgramList){
+                if(isNotInAnyConfiguredProgramState(programWorkflowService, patientProgram,patient)) {
+                    count ++;
+                }
+               }
+            if(count == 2){
+                return isBedAssigned(patient);
+            }
+            return true;
+        }
+        else {
+            return (isNotInAnyConfiguredProgramState(programWorkflowService, activePatientProgramList.get(0),patient) || isBedAssigned(patient));
+        }
+    }
+
     private boolean outcomeAvailable(Visit openVisit, List<Concept> concepts) {
         BahmniObsService bahmniObsService = Context.getService(BahmniObsService.class);
         return !bahmniObsService.getLatestObsByVisit(openVisit, concepts, null, true).isEmpty();
     }
 
-    private PatientProgram getActivePatientProgramForPatient(Patient patient, ProgramWorkflowService programWorkflowService) {
+    private List<PatientProgram> getActivePatientProgramForPatient(Patient patient, ProgramWorkflowService programWorkflowService) {
         List<PatientProgram> patientPrograms = programWorkflowService.getPatientPrograms(patient, null, null, null, null, null, false);
-        PatientProgram activePatientProgram = null;
+        List<PatientProgram> activePatientProgramList = new ArrayList<>();
         for (PatientProgram patientProgram : patientPrograms) {
             if (patientProgram.getDateCompleted() == null) {
-                activePatientProgram = patientProgram;
-                break;
+                activePatientProgramList.add(patientProgram);
             }
         }
-        return activePatientProgram;
+        return activePatientProgramList;
     }
 
-    private boolean isNotInAnyConfiguredProgramStateOrBedIsAssigned(ProgramWorkflowService programWorkflowService, PatientProgram activePatientProgram, Patient patient) {
+    private boolean isNotInAnyConfiguredProgramState(ProgramWorkflowService programWorkflowService, PatientProgram activePatientProgram, Patient patient) {
        return visitCloseData.getProgramStateConcepts().stream().anyMatch(concept -> {
             List<ProgramWorkflowState> programWorkflowStatesByConcept = programWorkflowService.getProgramWorkflowStatesByConcept(concept);
             ProgramWorkflowState programWorkflowStateForNetWorkFollowUp = programWorkflowStatesByConcept.get(0);
             PatientState patientState = activePatientProgram.getCurrentState(null);
-            BedManagementService bedManagementService = Context.getService(BedManagementService.class);
             ProgramWorkflowState patientCurrentWorkFlowState = patientState.getState();
-            BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
-            return !(patientCurrentWorkFlowState.equals(programWorkflowStateForNetWorkFollowUp) && patientState.getEndDate() == null && bedAssignmentDetailsByPatient == null);
+            return !(patientCurrentWorkFlowState.equals(programWorkflowStateForNetWorkFollowUp) && patientState.getEndDate() == null);
         });
+    }
+
+    private boolean isBedAssigned(Patient patient){
+        BedManagementService bedManagementService = Context.getService(BedManagementService.class);
+        BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
+        return !(bedAssignmentDetailsByPatient == null);
     }
 
     private boolean isHospitalVisit(Visit openVisit) {
