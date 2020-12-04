@@ -76,6 +76,8 @@ public class CloseVisitOnAnOutcomeTaskTest {
 
     private Concept networkFollowupConcept;
 
+    private Concept dischargeConcept;
+
     private CloseVisitOnAnOutcomeTask closeVisitOnAnOutcomeTask;
 
     private Concept setUpConceptData(Integer conceptId, String name) {
@@ -99,6 +101,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
         setValueForFinalStaticField(CloseVisitOnAnOutcomeTask.class, "log", log);
 
         networkFollowupConcept = setUpConceptData(103, "Network Follow-up");
+        dischargeConcept = setUpConceptData(104, "Discharge");
     }
 
     @Test
@@ -247,6 +250,54 @@ public class CloseVisitOnAnOutcomeTaskTest {
     }
 
     @Test
+    public void shouldCloseTheVisitWhenThatVisitIsHospitalVisitAndProgramInDischargeStateAndHasNoBedAssignedForThePatientInAmman() {
+        Patient patient = new Patient();
+        patient.setUuid("Uuid");
+
+        PatientState patientState = new PatientState();
+        patientState.setId(1);
+        patientState.setPatientProgram(new PatientProgram());
+
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
+
+        List<ProgramWorkflowState> programWorkflowStates = new ArrayList<>();
+        ProgramWorkflowState dischargeProgramWorkflowState = new ProgramWorkflowState(1);
+        dischargeProgramWorkflowState.setName("Something");
+        dischargeProgramWorkflowState.setConcept(dischargeConcept);
+        programWorkflowStates.add(dischargeProgramWorkflowState);
+        patientState.setState(dischargeProgramWorkflowState);
+
+        Visit hospitalVisit = new Visit(1001);
+        hospitalVisit.setVisitType(new VisitType("Hospital", "visit"));
+        hospitalVisit.setPatient(patient);
+
+        List<PatientProgram> patientPrograms = new ArrayList<>();
+        patientPrograms.add(activePatientProgram);
+
+        List<Visit> visits = new ArrayList<>();
+        visits.add(hospitalVisit);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(dischargeConcept));
+        when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
+        when(programWorkflowService.getProgramWorkflowStatesByConcept(dischargeConcept)).thenReturn(programWorkflowStates);
+        when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
+        when(Context.getService(BedManagementService.class)).thenReturn(bedManagementService);
+        when(bedManagementService.getBedAssignmentDetailsByPatient(patient)).thenReturn(null);
+        when(activePatientProgram.getDateCompleted()).thenReturn(null);
+        when(activePatientProgram.getCurrentState(null)).thenReturn(patientState);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
+        verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
+        verify(visitService, times(1)).endVisit(eq(hospitalVisit), isA(Date.class));
+    }
+
+    @Test
     public void shouldNotCloseTheHospitalVisitWhenBedIsAssignedAndStateIsNetworkFollowupInAmman() {
         BedDetails bedDetails = new BedDetails();
         Patient patient = new Patient();
@@ -298,7 +349,58 @@ public class CloseVisitOnAnOutcomeTaskTest {
     }
 
     @Test
-    public void shouldNotCloseVisitWhenVisitIsHospitalAndWhenTheStateIsNotNetworkFollowupInAmman() {
+    public void shouldNotCloseTheHospitalVisitWhenBedIsAssignedAndStateIsDischargeInAmman() {
+        BedDetails bedDetails = new BedDetails();
+        Patient patient = new Patient();
+        patient.setUuid("Uuid");
+
+        PatientState patientState = new PatientState();
+        patientState.setId(1);
+        patientState.setPatientProgram(new PatientProgram());
+
+        VisitType hospitalVisitType = new VisitType("Hospital", "visit");
+        List<VisitType> visitTypes = singletonList(hospitalVisitType);
+
+        List<ProgramWorkflowState> programWorkflowStates = new ArrayList<>();
+        ProgramWorkflowState dischargeProgramWorkflowState = new ProgramWorkflowState(1);
+        dischargeProgramWorkflowState.setName("Something");
+        dischargeProgramWorkflowState.setConcept(dischargeConcept);
+        programWorkflowStates.add(dischargeProgramWorkflowState);
+        patientState.setState(dischargeProgramWorkflowState);
+
+        Visit hospitalVisit = new Visit(1001);
+        hospitalVisit.setVisitType(new VisitType("Hospital", "visit"));
+        hospitalVisit.setPatient(patient);
+
+        List<PatientProgram> patientPrograms = new ArrayList<>();
+        patientPrograms.add(activePatientProgram);
+
+        List<Visit> visits = new ArrayList<>();
+        visits.add(hospitalVisit);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(dischargeConcept));
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
+        when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
+
+        when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
+        when(programWorkflowService.getProgramWorkflowStatesByConcept(dischargeConcept)).thenReturn(programWorkflowStates);
+        when(Context.getService(BedManagementService.class)).thenReturn(bedManagementService);
+
+        when(bedManagementService.getBedAssignmentDetailsByPatient(patient)).thenReturn(bedDetails);
+        when(activePatientProgram.getDateCompleted()).thenReturn(null);
+        when(activePatientProgram.getCurrentState(null)).thenReturn(patientState);
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(1)).getVisits(anyCollectionOf(VisitType.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false), eq(false));
+        verify(programWorkflowService, times(1)).getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false));
+        verify(visitService, times(0)).endVisit(eq(hospitalVisit), isA(Date.class));
+    }
+
+    @Test
+    public void shouldNotCloseVisitWhenVisitIsHospitalAndWhenTheStateIsNotNetworkFollowupNorDischargeInAmman() {
         Patient patient = new Patient();
         patient.setUuid("Uuid");
 
