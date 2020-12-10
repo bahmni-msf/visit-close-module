@@ -16,7 +16,7 @@ class VisitCloseData {
 
     private static final String VISIT_TYPES_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.visitType(s)";
     private static final String CONCEPTS_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.conceptName(s)";
-    private static final String PROGRAM_STATE_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.programState";
+    private static final String PROGRAM_STATE_GLOBAL_PROPERTY = "visits.closeOnAnOutcome.programState(s)";
     private GlobalPropertyReader globalPropertyReader;
     private VisitService visitService;
     private ConceptService conceptService;
