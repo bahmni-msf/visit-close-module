@@ -2,7 +2,6 @@ package org.msf.module.visit;
 
 import org.bahmni.module.bahmnicore.service.BahmniObsService;
 import org.openmrs.*;
-import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
@@ -86,21 +85,24 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
     }
 
     private boolean isNotInAnyConfiguredProgramStateOrBedIsAssigned(ProgramWorkflowService programWorkflowService, List<PatientProgram> activePatientProgramList, Patient patient) {
-        if(activePatientProgramList.size() > 1){
-            int count = 0;
-            for(PatientProgram patientProgram : activePatientProgramList){
-                if(isNotInAnyConfiguredProgramState(programWorkflowService, patientProgram,patient)) {
-                    count ++;
-                }
-               }
-            if(count == 2){
-                return isBedAssigned(patient);
+        if (activePatientProgramList.size() > 1) {
+            return isNotInAnyConfiguredProgramStatesWithMultipleProgramsOrBedAssigned(programWorkflowService, activePatientProgramList, patient);
+        } else {
+            return (isNotInAnyConfiguredProgramState(programWorkflowService, activePatientProgramList.get(0)) || isBedAssigned(patient));
+        }
+    }
+
+    private boolean isNotInAnyConfiguredProgramStatesWithMultipleProgramsOrBedAssigned(ProgramWorkflowService programWorkflowService, List<PatientProgram> activePatientProgramList, Patient patient) {
+        int activeProgramsWithConfiguredState = 0;
+        for (PatientProgram patientProgram : activePatientProgramList) {
+            if (!isNotInAnyConfiguredProgramState(programWorkflowService, patientProgram)) {
+                activeProgramsWithConfiguredState++;
             }
-            return true;
         }
-        else {
-            return (isNotInAnyConfiguredProgramState(programWorkflowService, activePatientProgramList.get(0),patient) || isBedAssigned(patient));
+        if (activeProgramsWithConfiguredState == activePatientProgramList.size()) {
+            return isBedAssigned(patient);
         }
+        return true;
     }
 
     private boolean outcomeAvailable(Visit openVisit, List<Concept> concepts) {
@@ -119,13 +121,13 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
         return activePatientProgramList;
     }
 
-    private boolean isNotInAnyConfiguredProgramState(ProgramWorkflowService programWorkflowService, PatientProgram activePatientProgram, Patient patient) {
-       return visitCloseData.getProgramStateConcepts().stream().anyMatch(concept -> {
+    private boolean isNotInAnyConfiguredProgramState(ProgramWorkflowService programWorkflowService, PatientProgram activePatientProgram) {
+        return visitCloseData.getProgramStateConcepts().stream().noneMatch(concept -> {
             List<ProgramWorkflowState> programWorkflowStatesByConcept = programWorkflowService.getProgramWorkflowStatesByConcept(concept);
-            ProgramWorkflowState programWorkflowStateForNetWorkFollowUp = programWorkflowStatesByConcept.get(0);
+            ProgramWorkflowState programWorkFlowStateForConfiguredConcept = programWorkflowStatesByConcept.get(0);
             PatientState patientState = activePatientProgram.getCurrentState(null);
             ProgramWorkflowState patientCurrentWorkFlowState = patientState.getState();
-            return !(patientCurrentWorkFlowState.equals(programWorkflowStateForNetWorkFollowUp) && patientState.getEndDate() == null);
+            return patientCurrentWorkFlowState.equals(programWorkFlowStateForConfiguredConcept) && patientState.getEndDate() == null;
         });
     }
 
