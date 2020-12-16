@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.msf.module</groupId>
 		<artifactId>visit-close-module</artifactId>
-		<version>0.91</version>
+		<version>0.93</version>
 	</parent>
 
 	<artifactId>visit-close-module-omod</artifactId>

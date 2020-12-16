@@ -4,7 +4,7 @@
 
 	<id>visit-close-module</id>
 	<name>Patient Visit Close Module</name>
-	<version>0.91</version>
+	<version>0.93</version>
 	<package>org.bahmni.module.visit</package>
 	<author>bahmni-msf</author>
 	<description>

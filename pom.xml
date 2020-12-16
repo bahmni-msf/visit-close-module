@@ -5,7 +5,7 @@
 
 	<groupId>org.msf.module</groupId>
 	<artifactId>visit-close-module</artifactId>
-	<version>0.91</version>
+	<version>0.93</version>
 	<packaging>pom</packaging>
 	<name>Visit closing module</name>
 
