@@ -1,7 +1,12 @@
 package org.msf.module.visit;
 
 import org.bahmni.module.bahmnicore.service.BahmniObsService;
-import org.openmrs.*;
+import org.openmrs.Concept;
+import org.openmrs.Patient;
+import org.openmrs.PatientProgram;
+import org.openmrs.PatientState;
+import org.openmrs.ProgramWorkflowState;
+import org.openmrs.Visit;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
@@ -134,7 +139,7 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
     private boolean isBedAssigned(Patient patient){
         BedManagementService bedManagementService = Context.getService(BedManagementService.class);
         BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
-        return !(bedAssignmentDetailsByPatient == null);
+        return bedAssignmentDetailsByPatient != null;
     }
 
     private boolean isHospitalVisit(Visit openVisit) {
