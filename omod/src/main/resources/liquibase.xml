@@ -36,6 +36,22 @@
         </sql>
     </changeSet>
 
+    <changeSet id="visit-close-module-101220201246" author="Vinisha, Bindu">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from global_property where property='visits.closeOnAnOutcome.programState(s)';
+            </sqlCheck>
+        </preConditions>
+        <comment>Create global property 'visits.closeOnAnOutcome.programState(s)'</comment>
+        <sql>
+            insert into global_property (property, description, uuid) values ('visits.closeOnAnOutcome.programState(s)',
+            'pipe(|) separated list of fully qualified concept names, whose program state is used to
+            close the visits defined in visits.closeOnAnOutcome.visitType(s). It works together with
+            visits.closeOnAnOutcome.visitType(s)',
+            uuid());
+        </sql>
+    </changeSet>
+
     <changeSet id="visit-close-module-1563218579" author="Siva R">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
