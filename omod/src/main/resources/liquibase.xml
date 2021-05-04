@@ -68,4 +68,14 @@
         </sql>
     </changeSet>
 
+    <changeSet id="visit-close-module-300420211538" author="Supriya, Tarun">
+        <comment>Update global property description for 'visits.closeOnAnOutcome.conceptName(s)'</comment>
+        <sql>
+            update global_property set description='Example: fully qualified concept name1 | {"fully qualified concept name2":["outcome1", "outcome2"]} | fully qualified concept name3
+            pipe(|) separated list of fully qualified concept names, whose outcome(any of the concept outcome) used to close the visits defined in visits.closeOnAnOutcome.visitType(s). It closes the visits defined in visits.closeOnAnOutcome.visitType(s).
+            Note: To close visit on specific concept outcomes fully qualified concept name should be given in {"fully qualified concept name":["outcome1", "outcome2"]} format.'
+            where property='visits.closeOnAnOutcome.conceptName(s)';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

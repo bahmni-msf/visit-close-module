@@ -1,35 +1,46 @@
 package org.msf.module.visit;
 
 import org.bahmni.module.bahmnicore.service.BahmniObsService;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.openmrs.Concept;
 import org.openmrs.Patient;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Visit;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.bahmniemrapi.encountertransaction.contract.BahmniObservation;
 import org.openmrs.module.bedmanagement.BedDetails;
 import org.openmrs.module.bedmanagement.service.BedManagementService;
 import org.openmrs.scheduler.tasks.AbstractTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CloseVisitOnAnOutcomeTask extends AbstractTask {
 
     private static final Logger log = LoggerFactory.getLogger(CloseVisitOnAnOutcomeTask.class);
     final String HOSPITAL_VISIT_TYPE_AMMAN = "Hospital";
 
+    private ConceptService conceptService;
     private VisitService visitService;
     private VisitCloseData visitCloseData;
 
     public CloseVisitOnAnOutcomeTask() {
         super();
+        conceptService = Context.getConceptService();
         visitService = Context.getVisitService();
         visitCloseData = new VisitCloseData();
     }
@@ -110,9 +121,51 @@ public class CloseVisitOnAnOutcomeTask extends AbstractTask {
         return true;
     }
 
-    private boolean outcomeAvailable(Visit openVisit, List<Concept> concepts) {
+    private boolean isValidJsonString(String jsonString) {
+        JSONObject json = (JSONObject) JSONValue.parse(jsonString);
+        return !(null == json);
+    }
+
+    private List<Concept> getConceptsWithoutAnswers(String[] concepts) {
+        String[] conceptsWithoutAnswers = Arrays.stream(concepts).filter(concept -> !isValidJsonString(concept)).toArray(size -> new String[size]);
+        return Arrays.stream(conceptsWithoutAnswers).map(conceptService::getConcept).collect(Collectors.toList());
+    }
+
+    private List<JSONObject> getConceptsWithAnswers(String[] concepts) {
+        String[] conceptsWithAnswers = Arrays.stream(concepts).filter(concept -> isValidJsonString(concept)).toArray(size -> new String[size]);
+        return Arrays.stream(conceptsWithAnswers).map(concept -> (JSONObject) JSONValue.parse(concept)).collect(Collectors.toList());
+    }
+
+    private boolean specificOutcomeAvailable(Visit openVisit, JSONObject conceptWithAnswers) {
         BahmniObsService bahmniObsService = Context.getService(BahmniObsService.class);
-        return !bahmniObsService.getLatestObsByVisit(openVisit, concepts, null, true).isEmpty();
+        String questionConceptStr = (String) conceptWithAnswers.keySet().iterator().next();
+        Concept questionConcept = conceptService.getConcept(questionConceptStr);
+        List<String> answerConcepts = (JSONArray) conceptWithAnswers.get(questionConceptStr);
+        Collection<BahmniObservation> obs = bahmniObsService.getLatestObsByVisit(openVisit, Arrays.asList(questionConcept), null, true);
+        Iterator<BahmniObservation> obsIterator = obs.iterator();
+        while (obsIterator.hasNext()) {
+            BahmniObservation ob = obsIterator.next();
+            if(answerConcepts.contains(ob.getValueAsString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean outcomeAvailable(Visit openVisit, String[] concepts) {
+        List<Concept> conceptsWithoutAnswers = getConceptsWithoutAnswers(concepts);
+        BahmniObsService bahmniObsService = Context.getService(BahmniObsService.class);
+        if (bahmniObsService.getLatestObsByVisit(openVisit, conceptsWithoutAnswers, null, true).isEmpty()) {
+            List<JSONObject> conceptsWithAnswers = getConceptsWithAnswers(concepts);
+            for (JSONObject conceptWithAnswers: conceptsWithAnswers) {
+                if (specificOutcomeAvailable(openVisit, conceptWithAnswers)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private List<PatientProgram> getActivePatientProgramForPatient(Patient patient, ProgramWorkflowService programWorkflowService) {

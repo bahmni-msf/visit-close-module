@@ -49,8 +49,12 @@ class VisitCloseData {
         return Arrays.stream(fullyQualifiedConceptNames).map(conceptService::getConcept).collect(Collectors.toList());
     }
 
-    List<Concept> getOutcomeConcepts() {
-        return getConcepts(CONCEPTS_GLOBAL_PROPERTY);
+    String[] getOutcomeConcepts() {
+        String[] concepts = {};
+        String pipeSeparatedConceptNames = globalPropertyReader.getValueOfProperty(CONCEPTS_GLOBAL_PROPERTY);
+        if (!StringUtils.isBlank(pipeSeparatedConceptNames))
+            concepts = pipeSeparatedConceptNames.split("\\s*\\|\\s*");
+        return concepts;
     }
 
     List<Concept> getProgramStateConcepts() {

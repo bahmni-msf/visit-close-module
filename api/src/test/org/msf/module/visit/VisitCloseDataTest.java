@@ -73,23 +73,33 @@ public class VisitCloseDataTest {
     }
 
     @Test
-    public void shouldConceptsForGivenConceptNamesInGlobalPropery() {
-        String conceptNames = "FUP, Outcomes for follow-up surgical validation | FV, Outcomes FV";
-        Concept concept1 = mock(Concept.class);
-        Concept concept2 = mock(Concept.class);
+    public void shouldReturnListOfConceptNamesForGivenConceptNamesInGlobalPropery() {
+        String concept1 = "FUP, Outcomes for follow-up surgical validation";
+        String concept2 = "FV, Outcomes FV";
+        String conceptNames = concept1 + " | " + concept2;
         when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.conceptName(s)"))
                 .thenReturn(conceptNames);
 
-        when(conceptService.getConcept("FUP, Outcomes for follow-up surgical validation"))
-                .thenReturn(concept1);
-        when(conceptService.getConcept("FV, Outcomes FV"))
-                .thenReturn(concept2);
-
-
-        List<Concept> concepts = visitCloseData.getOutcomeConcepts();
+        List<String> concepts = Arrays.asList(visitCloseData.getOutcomeConcepts());
 
         assertEquals(2, concepts.size());
         assertTrue(concepts.containsAll(Arrays.asList(concept1, concept2)));
+
+    }
+
+    @Test
+    public void shouldReturnListOfConceptNamesOrObjectsStringsForGivenConceptNamesInGlobalPropery() {
+        String concept1 = "FUP, Outcomes for follow-up surgical validation";
+        String concept2 = "{\"Fully Specified Concept Name\": [\"outcome1\", \"outcome2\"]}";
+        String concept3 = "FV, Outcomes FV";
+        String conceptNames = concept1 + " | " + concept2 + " | " + concept3;
+        when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.conceptName(s)"))
+                .thenReturn(conceptNames);
+
+        List<String> concepts = Arrays.asList(visitCloseData.getOutcomeConcepts());
+
+        assertEquals(3, concepts.size());
+        assertTrue(concepts.containsAll(Arrays.asList(concept1, concept2, concept3)));
 
     }
 
@@ -98,7 +108,7 @@ public class VisitCloseDataTest {
         String conceptNames = "Network Follow-up | Discharge";
         Concept concept1 = mock(Concept.class);
         Concept concept2 = mock(Concept.class);
-        when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.programState"))
+        when(globalPropertyReader.getValueOfProperty("visits.closeOnAnOutcome.programState(s)"))
                 .thenReturn(conceptNames);
 
         when(conceptService.getConcept("Network Follow-up"))

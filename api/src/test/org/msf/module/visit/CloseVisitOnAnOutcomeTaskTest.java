@@ -94,6 +94,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
     public void setUp() throws Exception {
         PowerMockito.mockStatic(Context.class);
         when(Context.getVisitService()).thenReturn(visitService);
+        when(Context.getConceptService()).thenReturn(conceptService);
 
         closeVisitOnAnOutcomeTask = new CloseVisitOnAnOutcomeTask();
 
@@ -109,8 +110,35 @@ public class CloseVisitOnAnOutcomeTaskTest {
         VisitType visitType = mock(VisitType.class);
         List<VisitType> visitTypes = singletonList(visitType);
         Visit visit = mock(Visit.class);
+        String conceptNameString = "Fully Specified Concept Name";
         Concept concept = mock(Concept.class);
-        List<Concept> concepts = singletonList(concept);
+        String[] concepts = { conceptNameString };
+        BahmniObsService obsService = mock(BahmniObsService.class);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class)))
+                .thenReturn(singletonList(visit));
+        when(visitCloseData.getOutcomeConcepts()).thenReturn(concepts);
+        when(conceptService.getConcept(conceptNameString)).thenReturn(concept);
+        when(Context.getService(BahmniObsService.class)).thenReturn(obsService);
+        when(obsService.getLatestObsByVisit(any(Visit.class), anyCollectionOf(Concept.class), any(), any()))
+                .thenReturn(singletonList(null));
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService).endVisit(any(Visit.class), any(Date.class));
+    }
+
+    @Test
+    public void shouldVerifyEndVisitIsCalledWhenSpecificOutcomeForObsAvailableForGivenConcepts() {
+        VisitType visitType = mock(VisitType.class);
+        List<VisitType> visitTypes = singletonList(visitType);
+        Visit visit = mock(Visit.class);
+        BahmniObservation obs = new BahmniObservation();
+        obs.setValue("outcome1");
+        String conceptNameString = "{\"Fully Specified Concept Name\": [\"outcome1\"]}";
+        String[] concepts = { conceptNameString };
         BahmniObsService obsService = mock(BahmniObsService.class);
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
@@ -120,7 +148,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
         when(visitCloseData.getOutcomeConcepts()).thenReturn(concepts);
         when(Context.getService(BahmniObsService.class)).thenReturn(obsService);
         when(obsService.getLatestObsByVisit(any(Visit.class), anyCollectionOf(Concept.class), any(), any()))
-                .thenReturn(singletonList(null));
+                .thenReturn(Collections.emptyList(), singletonList(obs));
 
         closeVisitOnAnOutcomeTask.execute();
 
@@ -132,8 +160,35 @@ public class CloseVisitOnAnOutcomeTaskTest {
         VisitType visitType = mock(VisitType.class);
         List<VisitType> visitTypes = singletonList(visitType);
         Visit visit = mock(Visit.class);
+        String conceptNameString = "Fully Specified Concept Name";
         Concept concept = mock(Concept.class);
-        List<Concept> concepts = singletonList(concept);
+        String[] concepts = { conceptNameString };
+        BahmniObsService obsService = mock(BahmniObsService.class);
+
+        when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
+        when(visitService.getVisits(anyCollectionOf(VisitType.class), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class)))
+                .thenReturn(singletonList(visit));
+        when(visitCloseData.getOutcomeConcepts()).thenReturn(concepts);
+        when(conceptService.getConcept(conceptNameString)).thenReturn(concept);
+        when(Context.getService(BahmniObsService.class)).thenReturn(obsService);
+        when(obsService.getLatestObsByVisit(any(Visit.class), anyCollectionOf(Concept.class), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        closeVisitOnAnOutcomeTask.execute();
+
+        verify(visitService, times(0)).endVisit(any(Visit.class), any(Date.class));
+    }
+
+    @Test
+    public void shouldVerifyEndVisitIsNotCalledWhenSpecificOutcomesForObsAreNotAvailableForGivenConcepts() {
+        VisitType visitType = mock(VisitType.class);
+        List<VisitType> visitTypes = singletonList(visitType);
+        Visit visit = mock(Visit.class);
+        BahmniObservation obs = new BahmniObservation();
+        obs.setValue("outcome");
+        String conceptNameString = "{\"Fully Specified Concept Name\": [\"outcome1\"]}";
+        String[] concepts = { conceptNameString };
         BahmniObsService obsService = mock(BahmniObsService.class);
 
         when(visitCloseData.getVisitTypes()).thenReturn(visitTypes);
@@ -143,7 +198,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
         when(visitCloseData.getOutcomeConcepts()).thenReturn(concepts);
         when(Context.getService(BahmniObsService.class)).thenReturn(obsService);
         when(obsService.getLatestObsByVisit(any(Visit.class), anyCollectionOf(Concept.class), any(), any()))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(Collections.emptyList(), singletonList(obs));
 
         closeVisitOnAnOutcomeTask.execute();
 
@@ -234,7 +289,6 @@ public class CloseVisitOnAnOutcomeTaskTest {
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
         when(visitCloseData.getProgramStateConcepts()).thenReturn(singletonList(networkFollowupConcept));
         when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
-        when(Context.getConceptService()).thenReturn(conceptService);
         when(programWorkflowService.getPatientPrograms(isA(Patient.class), eq(null), eq(null), eq(null), eq(null), eq(null), eq(false))).thenReturn(patientPrograms);
         when(programWorkflowService.getProgramWorkflowStatesByConcept(networkFollowupConcept)).thenReturn(programWorkflowStates);
         when(Context.getService(BedManagementService.class)).thenReturn(bedManagementService);
@@ -478,7 +532,7 @@ public class CloseVisitOnAnOutcomeTaskTest {
                 any(), any(), any(), any(), any(), any(), any(Boolean.class), any(Boolean.class))).thenReturn(visits);
 
         when(Context.getService(ProgramWorkflowService.class)).thenReturn(programWorkflowService);
-        when(visitCloseData.getOutcomeConcepts()).thenReturn(singletonList(networkFollowupConcept));
+        when(visitCloseData.getOutcomeConcepts()).thenReturn(new String[]{"Network Follow-up"});
         when(Context.getService(BahmniObsService.class)).thenReturn(bahmniObsService);
         when(bahmniObsService.getLatestObsByVisit(eq(openVisit), any(Collection.class), eq(null), eq(true))).thenReturn(bahmniObservations);
         when(conceptService.getConcept("Network Follow-up")).thenReturn(networkFollowupConcept);
