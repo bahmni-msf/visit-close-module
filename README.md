@@ -6,6 +6,8 @@ For building this omod, run:
 # Deployment
 Place that built omod in the following path:
 `/opt/openmrs/modules`
+# Test
+Run the test cases from ide by marking test folder as `Test Sources Root` folder.
 # Description
 It creates a new Scheduler Task `Close Visits On Outcome` which runs everyday at 11:50:00 pm. 
 
