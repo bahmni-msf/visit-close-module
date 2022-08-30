@@ -15,7 +15,7 @@
 	<description>OMOD project for patient visit close</description>
 
 	<properties>
-		<openMRSVersion>2.1.6</openMRSVersion>
+		<openMRSVersion>2.1.7</openMRSVersion>
 	</properties>
 
 	<dependencies>
