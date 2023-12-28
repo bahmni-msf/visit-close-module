@@ -1,7 +1,7 @@
 name: Build and Publish package
 on:
   push:
-    branches: [githubActions]
+    branches: [ocp-bahmni-lite, master]
 
 jobs:
   build-publish-package:
