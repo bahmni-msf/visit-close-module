@@ -13,14 +13,14 @@
 	<description>API project for patient visit close</description>
 
 	<properties>
-		<openMRSVersion>2.1.7</openMRSVersion>
+		<openMRSVersion>2.5.12</openMRSVersion>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.bahmni.module</groupId>
 			<artifactId>bahmnicore-api</artifactId>
-			<version>0.91-SNAPSHOT</version>
+			<version>0.93-1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openmrs.api</groupId>
