@@ -19,7 +19,7 @@ jobs:
           java-version: 1.8
 
       - name: Build with Maven
-        run: ./mvnw --no-transfer-progress clean install
+        run: mvn clean install
 
       - name: Set OMOD name and Release version
         run: |
