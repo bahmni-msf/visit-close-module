@@ -2,6 +2,7 @@ name: Build and Publish package
 on:
   push:
     branches: [ocp-dev-bahmni-lite, master]
+  workflow_dispatch:
 
 jobs:
   build-publish-package:
