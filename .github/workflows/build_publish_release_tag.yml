@@ -37,4 +37,4 @@ jobs:
           aws-region: ${{ secrets.BAHMNI_LITE_AWS_UAT_REGION }}
 
       - name: Upload OMOD
-        run: aws s3 cp omod/target/${{env.OMOD_NAME}}.omod s3://stable-artefacts/$GITHUB_REF_NAME/${{env.OMOD_NAME}}-${{env.RELEASE_VERSION}}.omod --region ${{ secrets.BAHMNI_LITE_AWS_UAT_REGION }} --acl public-read
+        run: aws s3 cp omod/target/${{env.OMOD_NAME}}.omod s3://stable-artefacts/$GITHUB_REF_NAME/visit-close-module/latest/${{env.OMOD_NAME}}-${{env.RELEASE_VERSION}}.omod --region ${{ secrets.BAHMNI_LITE_AWS_UAT_REGION }} --acl public-read
